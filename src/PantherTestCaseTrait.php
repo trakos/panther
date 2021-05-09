@@ -240,4 +240,9 @@ trait PantherTestCaseTrait
 
         return $_SERVER['PANTHER_WEB_SERVER_DIR'];
     }
+
+    public function provideTestResultAttachmentPaths(): array
+    {
+        return array_map('realpath', ServerExtension::getScreenshotPaths());
+    }
 }

@@ -13,11 +13,12 @@ declare(strict_types=1);
 
 namespace Symfony\Component\Panther;
 
+use PHPUnit\Framework\ReportAttachmentProviding;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 if (\class_exists(WebTestCase::class)) {
-    abstract class PantherTestCase extends WebTestCase
+    abstract class PantherTestCase extends WebTestCase implements ScreenshotProvidingTestCase
     {
         use WebTestAssertionsTrait;
 
@@ -37,7 +38,7 @@ if (\class_exists(WebTestCase::class)) {
     }
 } else {
     // Without Symfony
-    abstract class PantherTestCase extends TestCase
+    abstract class PantherTestCase extends TestCase implements ScreenshotProvidingTestCase
     {
         use PantherTestCaseTrait;
 

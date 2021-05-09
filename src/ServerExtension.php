@@ -33,11 +33,19 @@ final class ServerExtension implements BeforeFirstTestHook, AfterLastTestHook, B
     /** @var Client[] */
     private static $registeredClients = [];
 
+    /** @var string[] */
+    private static $screenshotPaths = [];
+
     public static function registerClient(Client $client): void
     {
         if (self::$enabled) {
             self::$registeredClients[] = $client;
         }
+    }
+
+    public static function getScreenshotPaths(): array
+    {
+        return self::$screenshotPaths;
     }
 
     public function executeBeforeFirstTest(): void
@@ -53,12 +61,13 @@ final class ServerExtension implements BeforeFirstTestHook, AfterLastTestHook, B
 
     public function executeBeforeTest(string $test): void
     {
-        self::reset();
+        self::resetClients();
+        self::resetScreenshotPaths();
     }
 
     public function executeAfterTest(string $test, float $time): void
     {
-        self::reset();
+        self::resetClients();
     }
 
     public function executeAfterTestError(string $test, string $message, float $time): void
@@ -73,9 +82,14 @@ final class ServerExtension implements BeforeFirstTestHook, AfterLastTestHook, B
         $this->pause(sprintf('Failure: %s', $message));
     }
 
-    private static function reset(): void
+    private static function resetClients(): void
     {
         self::$registeredClients = [];
+    }
+
+    private static function resetScreenshotPaths(): void
+    {
+        self::$screenshotPaths = [];
     }
 
     private function takeScreenshots(string $type, string $test): void
@@ -85,13 +99,15 @@ final class ServerExtension implements BeforeFirstTestHook, AfterLastTestHook, B
         }
 
         foreach (self::$registeredClients as $i => $client) {
-            $client->takeScreenshot(sprintf('%s/%s_%s_%s-%d.png',
+            $screenshotPath = sprintf('%s/%s_%s_%s-%d.png',
                 $_SERVER['PANTHER_ERROR_SCREENSHOT_DIR'],
                 date('Y-m-d_H-i-s'),
                 $type,
                 strtr($test, ['\\' => '-', ':' => '_']),
                 $i
-            ));
+            );
+            $client->takeScreenshot($screenshotPath);
+            self::$screenshotPaths[] = $screenshotPath;
         }
     }
 }
